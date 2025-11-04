@@ -1,1 +1,1 @@
-# SEC-NLP-Platform-stock-market-data-analysis-
+# Trading_Sentiment_Platform
