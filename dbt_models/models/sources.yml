@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: sec_filings
+    database: sec_filings        # Optional if Databricks catalog = schema
+    schema: sec_filings
+    tables:
+      - name: clean_filing_doc
