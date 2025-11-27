@@ -4,4 +4,4 @@ sources:
   - name: sec_filings
     schema: sec_filings
     tables:
-      - name: clean_filing_doc
+      - name: top100_clean_filing

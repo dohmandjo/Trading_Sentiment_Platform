@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: stg_cleaned_filings
+    description: "Test that all columns in stg_cleaned_filings table are not null, and cik and filing_date are have unique values"
+    columns:
+    - name: cik
+      tests: 
+        - not_null
+    - name: company_name
+      tests:
+        - not_null
+    - name: tickers
+      tests:
+        - not_null
+    - name: filing_date
+      tests:
+        - not_null
+    - name: market_cap
+      tests:
+        - not_null
+    - name: accessionNumber
+      tests:
+        - not_null
+    - name: risks_text
+      tests:
+        - not_null
+        - dbt_utils.expression_is_true:
+            expression: "!='' "
+    - name: mda_text
+      tests:
+        - not_null
+        - dbt_utils.expression_is_true:
+            expression: "!='' "
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: ['cik', 'filing_date']
+        
