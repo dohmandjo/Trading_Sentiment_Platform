@@ -26,12 +26,12 @@ models:
       tests:
         - not_null
         - dbt_utils.expression_is_true:
-            expression: "!='' "
+            expression: " !='' "
     - name: mda_text
       tests:
         - not_null
         - dbt_utils.expression_is_true:
-            expression: "!='' "
+            expression: " !='' "
 
     tests:
       - dbt_utils.unique_combination_of_columns:
