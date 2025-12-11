@@ -5,3 +5,4 @@ sources:
     schema: sec_filings
     tables:
       - name: top100_clean_filing
+      - name: filings_10K_text

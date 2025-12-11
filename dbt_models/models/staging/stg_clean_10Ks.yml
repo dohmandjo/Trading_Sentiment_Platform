@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: stg_clean_10Ks
+    description: "Cleaned 10-K extracted sections for top 100 companies."
+
+    columns:
+      - name: cik
+        tests:
+          - not_null
+
+      - name: filing_date
+        tests:
+          - not_null
+
+      - name: company_name
+        tests:
+          - not_null
+
+      - name: tickers
+        tests:
+          - not_null
+
+      - name: accessionNumber
+        tests:
+          - not_null
+      
+      - name: market_cap
+        tests:
+          - not_null
+
+      - name: filing_url
+        tests:
+          - not_null
+
+      - name: bus_text
+        tests:
+          - not_null
+          - min_length:
+              min_value: 5000
+
+      - name: risks_text
+        tests:
+          - not_null
+          - min_length:
+              min_value: 5000
+
+      - name: mda_text
+        tests:
+          - not_null
+          - min_length:
+              min_value: 5000
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - cik
+            - filing_date

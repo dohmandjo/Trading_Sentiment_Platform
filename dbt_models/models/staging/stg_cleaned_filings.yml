@@ -22,6 +22,9 @@ models:
     - name: accessionNumber
       tests:
         - not_null
+    - name: form_type
+      tests:
+        - not_null
     - name: risks_text
       tests:
         - not_null

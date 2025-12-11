@@ -1,4 +1,4 @@
-SELECT cik, company_name, tickers, filing_date, accessionNumber, market_cap, sector, risks_text, mda_text
+SELECT cik, company_name, tickers, filing_date, accessionNumber, form_type, market_cap, sector, risks_text, mda_text
 FROM {{ source("sec_filings","top100_clean_filing") }}
 WHERE length(trim(risks_text)) > 0 AND length(trim(mda_text)) > 0;
 
