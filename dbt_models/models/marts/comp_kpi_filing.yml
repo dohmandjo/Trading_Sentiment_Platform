@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: comp_kpi_filing
+    description: >
+      Company-level KPIs combining managerial sentiment, risk metrics,
+      and post-filing market reaction. Dominant narrative is derived
+      from BUSINESS and MDA sections only.
+
+    columns:
+      - name: cik
+        tests:
+          - not_null
+
+      - name: filing_date
+        tests:
+          - not_null
+
+      - name: dominant_narrative
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['optimism', 'caution', 'concern']
+
+      - name: optimism_share_avg
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "BETWEEN 0 AND 1"
+
+      - name: caution_share_avg
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "BETWEEN 0 AND 1"
+
+      - name: concern_share_avg
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "BETWEEN 0 AND 1"
+
+      - name: risk_cosine_distance
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"

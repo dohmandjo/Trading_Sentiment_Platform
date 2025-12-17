@@ -6,3 +6,7 @@ sources:
     tables:
       - name: top100_clean_filing
       - name: filings_10K_text
+      - name: fact_risk_drift
+      - name: fact_lm_sentiment
+      - name: fact_market_reaction
+      - name: fact_risk
