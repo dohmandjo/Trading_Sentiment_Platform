@@ -2,57 +2,41 @@ version: 2
 
 models:
   - name: stg_clean_10Ks
-    description: "Cleaned 10-K extracted sections for top 100 companies."
-
+    description: "10-K filings of the top companies with Business, Risk Factors and MD&A each longer than 5,000 characters."
     columns:
       - name: cik
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: filing_date
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: company_name
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: tickers
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: accessionNumber
-        tests:
-          - not_null
-      
+        data_tests: [not_null]
       - name: market_cap
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: filing_url
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: bus_text
-        tests:
+        data_tests:
           - not_null
           - min_length:
-              min_value: 5000
-
+              arguments:
+                min_value: 5000
       - name: risks_text
-        tests:
+        data_tests:
           - not_null
           - min_length:
-              min_value: 5000
-
+              arguments:
+                min_value: 5000
       - name: mda_text
-        tests:
+        data_tests:
           - not_null
           - min_length:
-              min_value: 5000
-
-    tests:
+              arguments:
+                min_value: 5000
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - cik
-            - filing_date
+          arguments:
+            combination_of_columns: [cik, filing_date]

@@ -1,0 +1,9 @@
+# Used by CI and tests/test_dbt_marts.py: the same models run on DuckDB with small fixture tables.
+dbt_models:
+  target: ci
+  outputs:
+    ci:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'ci/ci.duckdb') }}"
+      schema: sec_filings
+      threads: 1

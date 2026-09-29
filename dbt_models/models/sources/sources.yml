@@ -1,12 +1,13 @@
 version: 2
 
+# Tables written by the Databricks notebooks (databricks_notebooks/).
 sources:
   - name: sec_filings
     schema: sec_filings
     tables:
-      - name: top100_clean_filing
-      - name: filings_10K_text
-      - name: fact_risk_drift
-      - name: fact_lm_sentiment
-      - name: fact_market_reaction
-      - name: fact_risk
+      - name: filings_10K_text          # 02 · parsed Business / Risk Factors / MD&A text
+      - name: fact_risk                 # 03 · risk term counts + section length
+      - name: fact_finbert_sentiment    # 04 · FinBERT probabilities per filing section
+      - name: fact_lm_sentiment         # 05 · Loughran-McDonald buckets per filing section
+      - name: fact_risk_drift           # 06 · cosine distance of the Risk Factors embedding vs previous filing
+      - name: fact_market_reaction      # 07 · post-filing returns and volatility

@@ -24,7 +24,7 @@ def word_count(text: str | None) -> int:
 def build_matcher(nlp, keywords=RISK_KEYWORDS):
     """spaCy PhraseMatcher on lemmas, so 'interest rates' matches 'interest rate' and 'Interest Rates'.
 
-    The previous implementation compared each single-token lemma with the keyword list, so the 17 multi-word
+    The previous implementation compared each single-token lemma with the keyword list, so the 20 multi-word
     keywords ('supply chain', 'data breach', ...) could never match.
     """
     from spacy.matcher import PhraseMatcher

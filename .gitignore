@@ -217,3 +217,7 @@ dbt_models/*.duckdb
 
 # Local secrets / profiles (a template lives in dbt_models/profiles.example.yml)
 profiles.yml
+
+# dbt anonymous id
+.user.yml
+!dbt_models/ci/profiles.yml
