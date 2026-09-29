@@ -1,0 +1,9 @@
+# Tools for the unit tests and the dbt check (the notebooks themselves run on Databricks).
+pytest>=8
+ruff>=0.6
+pandas>=2.1
+numpy>=1.26
+requests>=2.31
+beautifulsoup4>=4.12
+spacy>=3.7,<3.9
+dbt-duckdb>=1.9
