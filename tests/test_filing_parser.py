@@ -46,4 +46,41 @@ def test_parse_filing_url_returns_empty_fields_on_network_failure(monkeypatch):
         raise requests.ConnectionError("down")
 
     monkeypatch.setattr(requests, "get", boom)
-    assert fp.parse_filing_url("http://x", "Jo jo@example.com") == ("", "", "", "")
+    assert fp.parse_filing_url("http://x", "Jo jo@example.com", sleep=lambda s: None) == ("", "", "", "")
+
+
+def test_paragraph_table_of_contents_is_not_mistaken_for_the_section():
+    """Regression: with a TOC written as text (not a <table>) the first match was the TOC entry."""
+    text = ("ITEM 1. BUSINESS 3 ITEM 1A. RISK FACTORS 9 ITEM 1B. UNRESOLVED 20 "
+            f"ITEM 1. BUSINESS {BUS} ITEM 1A. RISK FACTORS {RISK} ITEM 1B. UNRESOLVED STAFF COMMENTS NONE")
+    business, risk, _mda = fp.extract_sections(text)
+    assert business.upper() == BUS.upper().strip()
+    assert risk.upper() == RISK.upper().strip()
+
+
+class _Resp:
+    def __init__(self, status, text=""):
+        self.status_code, self.text = status, text
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            import requests
+            raise requests.HTTPError(f"HTTP {self.status_code}")
+
+
+def test_parse_filing_url_retries_rate_limits(monkeypatch):
+    import requests
+
+    responses = [_Resp(429), _Resp(503), _Resp(200, HTML)]
+    monkeypatch.setattr(requests, "get", lambda *a, **k: responses.pop(0))
+    _full, business, risk, mda = fp.parse_filing_url("http://x", "Jo jo@example.com", sleep=lambda s: None)
+    assert not responses and business and risk and mda
+
+
+def test_parse_filing_url_does_not_retry_client_errors(monkeypatch):
+    import requests
+
+    calls = []
+    monkeypatch.setattr(requests, "get", lambda *a, **k: calls.append(1) or _Resp(404))
+    assert fp.parse_filing_url("http://x", "Jo jo@example.com", sleep=lambda s: None) == ("", "", "", "")
+    assert len(calls) == 1

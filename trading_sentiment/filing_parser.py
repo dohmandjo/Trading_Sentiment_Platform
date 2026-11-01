@@ -6,6 +6,10 @@ moved here unchanged so they can be tested. Known limits are listed in the READM
 from __future__ import annotations
 
 import re
+import time
+
+# same as edgar.MIN_INTERVAL_SECONDS; not imported because notebook 02 ships only this module to the executors
+MIN_INTERVAL_SECONDS = 0.12
 
 MDA_HEADING = "ITEM 7. MANAGEMENT’S DISCUSSION AND ANALYSIS"
 
@@ -42,8 +46,13 @@ def normalize_headers(text: str) -> str:
 
 
 def _section(text: str, start: str, end_lookahead: str) -> str:
-    m = re.search(rf"{start}(.*?)(?={end_lookahead})", text, re.DOTALL)
-    return m.group(1).strip() if m else ""
+    """Longest span between a heading and the next one.
+
+    The first match is often a table-of-contents entry ("ITEM 1. BUSINESS 3 ITEM 1A. ...") when the TOC is laid out
+    as paragraphs rather than a <table>; the real section is the longest candidate.
+    """
+    spans = [m.group(1).strip() for m in re.finditer(rf"{start}(.*?)(?={end_lookahead})", text, re.DOTALL)]
+    return max(spans, key=len) if spans else ""
 
 
 def extract_sections(text: str) -> tuple[str, str, str]:
@@ -62,12 +71,24 @@ def parse_filing_html(html: str) -> tuple[str, str, str, str]:
     return normalize_headers(cleaned), business, risk, mda
 
 
-def parse_filing_url(url: str, user_agent: str, timeout: int = 20) -> tuple[str, str, str, str]:
-    """Download one filing and parse it; a failed download or parse yields four empty strings (filtered later by dbt)."""
+def parse_filing_url(
+    url: str, user_agent: str, timeout: int = 20, retries: int = 3, sleep=time.sleep
+) -> tuple[str, str, str, str]:
+    """Download one filing and parse it; a failed download or parse yields four empty strings (filtered later by dbt).
+
+    Runs inside a Spark UDF on several tasks at once, so it throttles and retries SEC rate-limit / server errors
+    instead of silently turning a 429 into an empty filing.
+    """
     import requests
 
     try:
-        resp = requests.get(url, headers={"User-Agent": user_agent}, timeout=timeout)
+        for attempt in range(retries + 1):
+            sleep(MIN_INTERVAL_SECONDS)
+            resp = requests.get(url, headers={"User-Agent": user_agent}, timeout=timeout)
+            retryable = resp.status_code == 429 or resp.status_code >= 500
+            if not retryable or attempt == retries:
+                break
+            sleep(2**attempt)
         resp.raise_for_status()
         return parse_filing_html(resp.text)
     except Exception as exc:  # one bad filing must not fail the whole Spark job
