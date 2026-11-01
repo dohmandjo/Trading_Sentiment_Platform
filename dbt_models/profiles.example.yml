@@ -1,0 +1,13 @@
+# Copy to ~/.dbt/profiles.yml (or point --profiles-dir at a folder containing it) and export the variables.
+# Never commit a profiles.yml with a token in it.
+dbt_models:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      catalog: workspace
+      schema: sec_filings                      # notebooks read the staging models from this schema
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      token: "{{ env_var('DATABRICKS_TOKEN') }}"
+      threads: 4

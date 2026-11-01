@@ -3,49 +3,61 @@ version: 2
 models:
   - name: comp_kpi_filing
     description: >
-      Company-level KPIs combining managerial sentiment, risk metrics,
-      and post-filing market reaction. Dominant narrative is derived
-      from BUSINESS and MDA sections only.
-
+      One row per 10-K filing that has a previous filing to compare with, for companies with at least two such
+      filings (first filings and single-comparison companies are dropped on purpose: the mart feeds trend and drift
+      charts). Combines managerial sentiment (Loughran-McDonald, BUSINESS + MDA), FinBERT signals, risk term counts
+      and density, year-over-year risk-language drift (embedding cosine distance) and post-filing market reaction.
+      dominant_narrative is derived from BUSINESS and MDA sections only.
     columns:
       - name: cik
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: filing_date
-        tests:
-          - not_null
-
+        data_tests: [not_null]
       - name: dominant_narrative
-        tests:
-          - not_null
+        data_tests:
           - accepted_values:
               arguments:
                 values: ['optimism', 'caution', 'concern']
-
       - name: optimism_share_avg
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: "BETWEEN 0 AND 1"
-
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1}
       - name: caution_share_avg
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: "BETWEEN 0 AND 1"
-
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1}
       - name: concern_share_avg
-        tests:
-          - not_null
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: "BETWEEN 0 AND 1"
-
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 1}
+      - name: finbert_mgmt_score
+        description: "Mean of P(positive) - P(negative) over BUSINESS and MDA; -1 (negative) to +1 (positive)."
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: -1, max_value: 1}
+      - name: finbert_risk_score
+        description: "P(positive) - P(negative) for the Risk Factors section."
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: -1, max_value: 1}
       - name: risk_cosine_distance
-        tests:
-          - dbt_utils.expression_is_true:
-              arguments:
-                expression: ">= 0"
+        description: "Cosine distance between this filing's Risk Factors embedding and the previous filing's (0 = identical)."
+        data_tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0, max_value: 2}
+      - name: risk_density_per_1k
+        description: "Risk keyword hits per 1,000 words of the Risk Factors section."
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0}
+      - name: risk_density_change
+        description: "risk_density_per_1k minus the company's previous filing's value; NULL for the first filing."
+      - name: valid_filing_count
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 2}
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [cik, filing_date]

@@ -2,41 +2,39 @@ version: 2
 
 models:
   - name: stg_cleaned_filings
-    description: "Test that all columns in stg_cleaned_filings table are not null, and cik and filing_date are have unique values"
+    description: "10-K filings with non-empty Risk Factors and MD&A text. One row per (cik, filing_date)."
     columns:
-    - name: cik
-      tests: 
-        - not_null
-    - name: company_name
-      tests:
-        - not_null
-    - name: tickers
-      tests:
-        - not_null
-    - name: filing_date
-      tests:
-        - not_null
-    - name: market_cap
-      tests:
-        - not_null
-    - name: accessionNumber
-      tests:
-        - not_null
-    - name: form_type
-      tests:
-        - not_null
-    - name: risks_text
-      tests:
-        - not_null
-        - dbt_utils.expression_is_true:
-            expression: " !='' "
-    - name: mda_text
-      tests:
-        - not_null
-        - dbt_utils.expression_is_true:
-            expression: " !='' "
-
-    tests:
+      - name: cik
+        data_tests: [not_null]
+      - name: company_name
+        data_tests: [not_null]
+      - name: tickers
+        data_tests: [not_null]
+      - name: filing_date
+        data_tests: [not_null]
+      - name: market_cap
+        data_tests: [not_null]
+      - name: accessionNumber
+        data_tests: [not_null]
+      - name: form_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['10-K']
+      - name: risks_text
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "!= ''"
+      - name: mda_text
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "!= ''"
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: ['cik', 'filing_date']
-        
+          arguments:
+            combination_of_columns: [cik, filing_date]

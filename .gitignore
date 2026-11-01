@@ -205,3 +205,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# macOS
+.DS_Store
+
+# dbt
+dbt_models/target/
+dbt_models/dbt_packages/
+dbt_models/logs/
+dbt_models/*.duckdb
+
+# Local secrets / profiles (a template lives in dbt_models/profiles.example.yml)
+profiles.yml
+
+# dbt anonymous id
+.user.yml
+!dbt_models/ci/profiles.yml
